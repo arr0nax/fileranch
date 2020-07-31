@@ -1,0 +1,149 @@
+let mouseStart = [0,0];
+let mouseEnd = [0,0];
+let canvasWidth = window.innerWidth;
+let canvasHeight = window.innerHeight;
+let centerX = canvasWidth/2;
+let centerY = canvasHeight/2;
+let coords = [centerX,centerY];
+let gridSize = 300;
+let gridX = Math.floor(canvasWidth / gridSize);
+let gridY = Math.floor(canvasHeight / gridSize);
+let zoomLevel = 1;
+let noClick = true;
+let files = []
+let pointers = []
+let noRender = false;
+
+function setup() {
+	createCanvas(canvasWidth, canvasHeight);
+	document.getElementById('goHome').onclick = () => {
+		coords = [centerX,centerY];
+		zoomLevel = 1;
+	}
+	getFiles();
+}
+
+function getFiles() {
+	fetch(`/square?xMax=${coords[0] + 200}&xMin=${coords[0] - canvasWidth/zoomLevel}&yMax=${coords[1] + 200}&yMin=${coords[1] - canvasHeight/zoomLevel}`)
+	.then((res) => res.json())
+	.then((json) => {
+		noRender = true;
+		pointers.forEach(pointer => pointer.remove());
+		pointers = [];
+		files = [];
+		files = json;
+		files.forEach(file => {
+			// const a = createA('http://twitter.com', file.file)
+			const a = createA('/files/'+file.file, file.file)
+			a.attribute('target', '_')
+			// a.attribute('download', file.file)
+			pointers.push(a);
+		})
+		noRender = false;
+	});
+
+}
+
+function mouseClicked(event) {
+	if (!noClick && (event.target.tagName != 'A')) {
+		const fileCoords = [coords[0] - mouseX, coords[1] - mouseY];
+		var fileSelector = document.createElement('input');
+		fileSelector.setAttribute('type', 'file');
+		fileSelector.click();
+		fileSelector.addEventListener('change', (e) => {
+			const formData = new FormData()
+			formData.append('file', fileSelector.files[0]);
+			fetch(`/file?x=${fileCoords[0]}&y=${fileCoords[1]}`, {
+			  method: 'POST',
+			  body: formData,
+			}).then((response) => getFiles())
+			.catch(err => console.log(err))
+		})
+	}
+	// return false; //to prevent weird browser things
+}
+
+function mouseMoved() {
+	noClick = false;
+}
+
+function doubleClicked() {
+	var textInput = document.createElement('input')
+	textInput.setAttribute('type', 'text')
+	textInput.focus();
+}
+
+function mouseReleased() {
+	getFiles();
+}
+
+function mouseDragged(event) {
+	noClick = true;
+	mouseEnd = [event.layerX / zoomLevel, event.layerY / zoomLevel];
+	coords = [coords[0]+mouseEnd[0]-mouseStart[0], coords[1]+mouseEnd[1]-mouseStart[1]];
+	mouseStart = mouseEnd;
+ }
+
+function mousePressed(event) {
+	mouseStart = [event.layerX / zoomLevel, event.layerY / zoomLevel];
+}
+
+function mouseWheel(event) {
+	// not quite ready yet
+	// zoomLevel += -event.delta / 1000;
+	// if (zoomLevel >= 10) zoomLevel = 10;
+	// if (zoomLevel <= .1) zoomLevel = .1;
+}
+
+function draw() {
+	clear();
+	// textSize(20);
+	// text((coords[0] - mouseX) +', ' +( coords[1] - mouseY), 10, 10);
+	textSize(12);
+	scale(zoomLevel);
+	var offsetX = coords[0] % gridSize;
+	var offsetY = coords[1] % gridSize;
+	stroke(220);
+	for(var i=0; i<=gridX/zoomLevel; i++) {
+		line(i*gridSize+offsetX,0, i*gridSize+offsetX, canvasHeight/zoomLevel) 
+	}
+	for(var j=0; j<=gridY/zoomLevel; j++) {
+		line(0, j*gridSize+offsetY,canvasWidth/zoomLevel, j*gridSize+offsetY) 
+	}
+	fill(0, 102, 153, 0.5);
+	for(var i=-1; i<=Math.ceil(gridX/zoomLevel); i++) {
+		for(var j=-1; j<=Math.ceil(gridY/zoomLevel); j++) {
+			var x = betterFloor(coords[0] / gridSize) - i;
+			var y = betterFloor(coords[1] / gridSize) - j;
+			var locX = i*gridSize+offsetX + 4;
+			var locY = j*gridSize+offsetY - 4;
+			text(x + ', ' + y, locX, locY);
+		}
+	}
+	fill(0,0,255);
+	stroke(0,0,255);
+	if (!noRender) {
+		pointers.forEach((pointer, i) => {
+			pointer.position(coords[0] - files[i].x, coords[1] - files[i].y);
+	
+		})
+	}
+}
+
+function betterFloor(int) {
+	if (Math.sign(int) == 1) {
+		return Math.floor(int)
+	} else {
+		return Math.ceil(int)
+	}
+}
+
+function windowResized() {
+	canvasWidth = window.innerWidth;
+	canvasHeight = window.innerHeight;
+	centerX = canvasWidth/2;
+	centerY = canvasHeight/2;
+	gridX = Math.floor(canvasWidth / gridSize);
+	gridY = Math.floor(canvasHeight / gridSize);	
+	resizeCanvas(canvasWidth, canvasHeight);
+  }
