@@ -11,16 +11,42 @@
         overflow: hidden;
         position: fixed;
         -webkit-overflow-scrolling: touch;
+        cursor: grab;
       }
 
-      #goHome {
+      #buttons {
         position: absolute;
         top: 12px;
         right: 12px;
+        display: flex;
+        flex-direction: row;
+        cursor: pointer;
+      }
+
+      #buttons:hover {
+        cursor: pointer;
+      }
+
+      input, button {
+        display: inline-block;
+        margin-left: 10px;
+        cursor: pointer;
+
+      }
+
+      label {
+        cursor: pointer;
+
       }
     </style>
   </head>
   <body>
-    <button id="goHome" >home</button>
+    <div id="buttons">
+      <input type="radio" id="text" name="gender" value="text">
+      <label for="text">text</label><br>
+      <input type="radio" id="file" name="gender" value="file" checked="true">
+      <label for="file">file</label><br>
+      <button id="goHome" >home</button>
+    </div>
   </body>
 </html>

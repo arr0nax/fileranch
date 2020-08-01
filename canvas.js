@@ -12,7 +12,13 @@ let zoomLevel = 1;
 let noClick = true;
 let files = []
 let pointers = []
+let texts = [];
 let noRender = false;
+let inp;
+let addButton;
+let closeButton;
+let inputText;
+let inputCoords;
 
 function setup() {
 	createCanvas(canvasWidth, canvasHeight);
@@ -24,14 +30,18 @@ function setup() {
 }
 
 function getFiles() {
+	inp && inp.remove()
 	fetch(`/square?xMax=${coords[0] + 200}&xMin=${coords[0] - canvasWidth/zoomLevel}&yMax=${coords[1] + 200}&yMin=${coords[1] - canvasHeight/zoomLevel}`)
 	.then((res) => res.json())
 	.then((json) => {
+		console.log(json);
 		noRender = true;
 		pointers.forEach(pointer => pointer.remove());
 		pointers = [];
 		files = [];
-		files = json;
+		texts = [];
+		texts = json.text;
+		files = json.files;
 		files.forEach(file => {
 			// const a = createA('http://twitter.com', file.file)
 			const a = createA('/files/'+file.file, file.file)
@@ -45,36 +55,63 @@ function getFiles() {
 }
 
 function mouseClicked(event) {
-	if (!noClick && (event.target.tagName != 'A')) {
-		const fileCoords = [coords[0] - mouseX, coords[1] - mouseY];
-		var fileSelector = document.createElement('input');
-		fileSelector.setAttribute('type', 'file');
-		fileSelector.click();
-		fileSelector.addEventListener('change', (e) => {
-			const formData = new FormData()
-			formData.append('file', fileSelector.files[0]);
-			fetch(`/file?x=${fileCoords[0]}&y=${fileCoords[1]}`, {
-			  method: 'POST',
-			  body: formData,
-			}).then((response) => getFiles())
-			.catch(err => console.log(err))
-		})
-	}
+	
+
 	// return false; //to prevent weird browser things
+}
+
+function sendText() {
+
 }
 
 function mouseMoved() {
 	noClick = false;
 }
 
-function doubleClicked() {
-	var textInput = document.createElement('input')
-	textInput.setAttribute('type', 'text')
-	textInput.focus();
-}
+// function doubleClicked() {
+// 	var textInput = document.createElement('input')
+// 	textInput.setAttribute('type', 'text')
+// 	textInput.focus();
+// }
 
-function mouseReleased() {
+function mouseReleased(event) {
 	getFiles();
+	cursor('grab')
+	if (!noClick && (event.target.id == 'defaultCanvas0')) {
+		if (document.getElementById('file').checked) {
+			const fileCoords = [coords[0] - mouseX, coords[1] - mouseY];
+			var fileSelector = document.createElement('input');
+			fileSelector.setAttribute('type', 'file');
+			fileSelector.click();
+			fileSelector.addEventListener('change', (e) => {
+				console.log(e);
+				const formData = new FormData()
+				formData.append('file', fileSelector.files[0]);
+				fetch(`/file?x=${fileCoords[0]}&y=${fileCoords[1]}`, {
+				  method: 'POST',
+				  body: formData,
+				}).then((response) => getFiles())
+				.catch(err => console.log(err))
+			})
+		}
+		if (document.getElementById('text').checked) {
+			inp = createInput('');
+			inp.position(mouseX - 9, mouseY - 10);
+			inp.elt.focus();
+			inputCoords = [coords[0] - mouseX, coords[1] - mouseY - 4];
+			inp.input(function() {inputText = this.value()})
+			inp.elt.addEventListener('keyup', function(e) {
+				if (e.key === 'Enter' || e.keyCode === 13) {
+					const formData = new FormData()
+					formData.append('inputText', inputText);
+					fetch(`/text?x=${inputCoords[0]}&y=${inputCoords[1]}&text=${inputText}`, {
+						method: 'POST'
+					}).then((response) => getFiles())
+					.catch(err => console.log(err))
+				}
+			})
+		}
+	}
 }
 
 function mouseDragged(event) {
@@ -85,15 +122,20 @@ function mouseDragged(event) {
  }
 
 function mousePressed(event) {
+	noClick = false;
 	mouseStart = [event.layerX / zoomLevel, event.layerY / zoomLevel];
+	cursor('grabbing');
+	inp && inp.remove();
+	addButton && addButton.remove();
+	closeButton && closeButton.remove();
 }
 
-function mouseWheel(event) {
+// function mouseWheel(event) {
 	// not quite ready yet
 	// zoomLevel += -event.delta / 1000;
 	// if (zoomLevel >= 10) zoomLevel = 10;
 	// if (zoomLevel <= .1) zoomLevel = .1;
-}
+// }
 
 function draw() {
 	clear();
@@ -111,7 +153,7 @@ function draw() {
 		line(0, j*gridSize+offsetY,canvasWidth/zoomLevel, j*gridSize+offsetY) 
 	}
 	fill(0, 102, 153, 0.5);
-	for(var i=-1; i<=Math.ceil(gridX/zoomLevel); i++) {
+	for(var i=-1; i<=Math.ceil(gridX/zoomLevel) + 1; i++) {
 		for(var j=-1; j<=Math.ceil(gridY/zoomLevel); j++) {
 			var x = betterFloor(coords[0] / gridSize) - i;
 			var y = betterFloor(coords[1] / gridSize) - j;
@@ -120,12 +162,16 @@ function draw() {
 			text(x + ', ' + y, locX, locY);
 		}
 	}
-	fill(0,0,255);
-	stroke(0,0,255);
+	textSize(20);
+	textStyle(ITALIC);
+	fill(0,0,0);
 	if (!noRender) {
 		pointers.forEach((pointer, i) => {
 			pointer.position(coords[0] - files[i].x, coords[1] - files[i].y);
 	
+		})
+		texts.forEach((words, i) => {
+			text(words.text, coords[0] - words.x, coords[1] - words.y);
 		})
 	}
 }

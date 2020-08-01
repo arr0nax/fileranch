@@ -25,6 +25,18 @@ app.get('/p5.start2d.js', function(req, res){
 app.get('/file', function(req, res) {
   res.send()
 })
+app.post('/text', function(req, res) {
+    console.log('added text', req.query.text);
+    const text = 'INSERT INTO text(x, y, text) VALUES($1, $2, $3) RETURNING *'
+    const x = Math.floor(parseInt(req.query.x, 10));
+    const y = Math.floor(parseInt(req.query.y, 10));
+    const values = [x, y, req.query.text]
+    pool.query(text, values)
+      .then(pic => {
+        res.send(pic.rows[0])
+      })
+      .catch(e => console.error(e.stack));
+})
 app.post('/file', function(req, res) {
   new formidable.IncomingForm().parse(req)
     .on('fileBegin', (name, file) => {
@@ -52,8 +64,13 @@ app.get('/square', function(req, res) {
   const text = 'SELECT * FROM files WHERE x BETWEEN $1 AND $2 AND y  BETWEEN $3 AND $4';
   const values = [xMin, xMax, yMin, yMax];
   pool.query(text, values)
-  .then(rows => {
-    res.send(rows.rows)
+  .then(fileRows => {
+    const text = 'SELECT * FROM text WHERE x BETWEEN $1 AND $2 AND y  BETWEEN $3 AND $4';
+    const values = [xMin, xMax, yMin, yMax];
+    pool.query(text, values)
+    .then(textRows => {
+      res.send({files: fileRows.rows, text: textRows.rows})
+    })
   })
   .catch(e => console.error(e.stack));
 })
