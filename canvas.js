@@ -19,6 +19,7 @@ let addButton;
 let closeButton;
 let inputText;
 let inputCoords;
+let consoleText = '';
 
 function setup() {
 	createCanvas(canvasWidth, canvasHeight);
@@ -82,16 +83,28 @@ function mouseReleased(event) {
 			const fileCoords = [coords[0] - mouseX, coords[1] - mouseY];
 			var fileSelector = document.createElement('input');
 			fileSelector.setAttribute('type', 'file');
+			fileSelector.setAttribute('style', 'position: absolute; top: -50px');
+			document.body.insertBefore(fileSelector, document.getElementById('buttons'));
 			fileSelector.click();
-			fileSelector.addEventListener('change', (e) => {
+			consoleText = 'asking for file';
+			fileSelector.addEventListener('input', (e) => {
 				console.log(e);
+				consoleText = 'fileChange'
 				const formData = new FormData()
 				formData.append('file', fileSelector.files[0]);
 				fetch(`/file?x=${fileCoords[0]}&y=${fileCoords[1]}`, {
 				  method: 'POST',
 				  body: formData,
-				}).then((response) => getFiles())
-				.catch(err => console.log(err))
+				}).then((response) => {
+					consoleText = response;
+					getFiles()
+					fileSelector.remove();
+				})
+				.catch(err => {
+					consoleText = err;
+					console.log(err)
+					fileSelector.remove();
+				})
 			})
 		}
 		if (document.getElementById('text').checked) {
@@ -165,6 +178,7 @@ function draw() {
 	textSize(20);
 	textStyle(ITALIC);
 	fill(0,0,0);
+	// text(consoleText, 10, 20);
 	if (!noRender) {
 		pointers.forEach((pointer, i) => {
 			pointer.position(coords[0] - files[i].x, coords[1] - files[i].y);
