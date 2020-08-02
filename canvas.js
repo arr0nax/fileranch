@@ -20,7 +20,7 @@ let closeButton;
 let inputText;
 let inputCoords;
 let consoleText = '';
-let mobileScale = canvasWidth < 600 ? 0.8 : 1;
+let mobileScale = canvasWidth < 600 ? 0.85 : 1;
 
 function setup() {
 	createCanvas(canvasWidth, canvasHeight);
