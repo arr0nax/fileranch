@@ -20,7 +20,7 @@ let closeButton;
 let inputText;
 let inputCoords;
 let consoleText = '';
-let mobile = canvasWidth < 600;
+let mobileScale = canvasWidth < 600 ? 0.7 : 1;
 
 function setup() {
 	createCanvas(canvasWidth, canvasHeight);
@@ -48,6 +48,7 @@ function getFiles() {
 			// const a = createA('http://twitter.com', file.file)
 			const a = createA('/files/'+file.file, file.file)
 			a.attribute('target', '_')
+			a.attribute('style', `font-size: ${mobileScale}em`)
 			// a.attribute('download', file.file)
 			pointers.push(a);
 		})
@@ -155,21 +156,21 @@ function draw() {
 	clear();
 	// textSize(20);
 	// text((coords[0] - mouseX) +', ' +( coords[1] - mouseY), 10, 10);
-	textSize(12);
 	// scale(zoomLevel);
 	// if (mobile) {
-	// 	scale(0.8, 0.8)
-	// }
-	var offsetX = coords[0] % gridSize;
-	var offsetY = coords[1] % gridSize;
-	stroke(220);
-	for(var i=0; i<=gridX/zoomLevel; i++) {
-		line(i*gridSize+offsetX,0, i*gridSize+offsetX, canvasHeight/zoomLevel) 
-	}
-	for(var j=0; j<=gridY/zoomLevel; j++) {
-		line(0, j*gridSize+offsetY,canvasWidth/zoomLevel, j*gridSize+offsetY) 
-	}
-	fill(0, 102, 153, 0.5);
+		// 	scale(0.8, 0.8)
+		// }
+		var offsetX = coords[0] % gridSize;
+		var offsetY = coords[1] % gridSize;
+		stroke(220);
+		for(var i=0; i<=gridX/zoomLevel; i++) {
+			line(i*gridSize+offsetX,0, i*gridSize+offsetX, canvasHeight/zoomLevel) 
+		}
+		for(var j=0; j<=gridY/zoomLevel; j++) {
+			line(0, j*gridSize+offsetY,canvasWidth/zoomLevel, j*gridSize+offsetY) 
+		}
+		textSize(12);
+		fill(0, 102, 153, 0.5);
 	for(var i=-1; i<=Math.ceil(gridX/zoomLevel) + 1; i++) {
 		for(var j=-1; j<=Math.ceil(gridY/zoomLevel); j++) {
 			var x = betterFloor(coords[0] / gridSize) - i;
@@ -179,7 +180,7 @@ function draw() {
 			text(x + ', ' + y, locX, locY);
 		}
 	}
-	textSize(20);
+	textSize(20 * mobileScale);
 	textStyle(ITALIC);
 	fill(0,0,0);
 	// text(consoleText, 10, 20);
