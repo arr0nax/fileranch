@@ -33,7 +33,7 @@ function setup() {
 
 function getFiles() {
 	inp && inp.remove()
-	fetch(`/square?xMax=${coords[0] + 500}&xMin=${coords[0] - canvasWidth/zoomLevel - 500}&yMax=${coords[1] + 500}&yMin=${coords[1] - canvasHeight/zoomLevel}`)
+	fetch(`/square?xMax=${coords[0] + 500}&xMin=${coords[0] - canvasWidth/zoomLevel - 500}&yMax=${coords[1] + 500}&yMin=${coords[1] - canvasHeight/zoomLevel - 500}`)
 	.then((res) => res.json())
 	.then((json) => {
 		console.log(json);
