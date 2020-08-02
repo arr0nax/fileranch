@@ -16,6 +16,21 @@ const pool = new Pool({
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
+app.get('/favicon.ico', function(req, res){
+  res.sendFile(__dirname + '/favicon.ico');
+});
+app.get('/apple-touch-icon.png', function(req, res){
+  res.sendFile(__dirname + '/apple-touch-icon.png');
+});
+app.get('/favicon-32x32.png', function(req, res){
+  res.sendFile(__dirname + '/favicon-32x32.png');
+});
+app.get('/favicon-16x16.png', function(req, res){
+  res.sendFile(__dirname + '/favicon-16x16.png');
+});
+app.get('/site.webmanifest', function(req, res){
+  res.sendFile(__dirname + '/site.webmanifest');
+});
 app.get('/canvas.js', function(req, res){
   res.sendFile(__dirname + '/canvas.js');
 });

@@ -20,6 +20,7 @@ let closeButton;
 let inputText;
 let inputCoords;
 let consoleText = '';
+let mobile = canvasWidth < 600;
 
 function setup() {
 	createCanvas(canvasWidth, canvasHeight);
@@ -32,7 +33,7 @@ function setup() {
 
 function getFiles() {
 	inp && inp.remove()
-	fetch(`/square?xMax=${coords[0] + 200}&xMin=${coords[0] - canvasWidth/zoomLevel}&yMax=${coords[1] + 200}&yMin=${coords[1] - canvasHeight/zoomLevel}`)
+	fetch(`/square?xMax=${coords[0] + 500}&xMin=${coords[0] - canvasWidth/zoomLevel - 500}&yMax=${coords[1] + 500}&yMin=${coords[1] - canvasHeight/zoomLevel}`)
 	.then((res) => res.json())
 	.then((json) => {
 		console.log(json);
@@ -155,7 +156,10 @@ function draw() {
 	// textSize(20);
 	// text((coords[0] - mouseX) +', ' +( coords[1] - mouseY), 10, 10);
 	textSize(12);
-	scale(zoomLevel);
+	// scale(zoomLevel);
+	// if (mobile) {
+	// 	scale(0.8, 0.8)
+	// }
 	var offsetX = coords[0] % gridSize;
 	var offsetY = coords[1] % gridSize;
 	stroke(220);
